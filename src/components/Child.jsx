@@ -1,8 +1,6 @@
-// import React from 'react'
-// import pack from '../../package.json'
-var calc = require('../js/calc.js');
+import * as calc from '../js/calc.js'
 
-module.exports = React.createClass({
+let Child = React.createClass({
  render: function(){
    return (
      <div>
@@ -11,3 +9,5 @@ module.exports = React.createClass({
    )
  }
 });
+
+export default Child;

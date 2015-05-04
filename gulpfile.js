@@ -5,9 +5,9 @@ var watch = require('gulp-watch');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var changed = require('gulp-changed');
+var babelify = require('babelify');
 var browserify = require('browserify');
 var watchify = require('watchify');
-var reactify = require('reactify');
 var sass = require('gulp-sass');
 var streamify = require('gulp-streamify');
 var gulpif = require('gulp-if');
@@ -55,13 +55,17 @@ gulp.task('setWatchers', function(cb) {
 
   var watcher  = watchify(browserify({
     entries: './src/components/App.jsx',
-    transform: [reactify],
+    // the babelify transform will automatically transform .jsx files
+    transform: [babelify],
     debug: true, // generates inline sourcemaps
     cache: {}, packageCache: {}, fullPaths: true
   }));
 
   var onUpdate = function() {
-    watcher.bundle()
+    watcher
+      // The babelify transform will automatically transform .jsx files
+      // .transform(babelify)
+      .bundle()
       .pipe(source('app.js'))
       .pipe(gulp.dest('build/debug'))
       .pipe(livereload());

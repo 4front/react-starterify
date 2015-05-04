@@ -4,7 +4,8 @@
 
 A 4front starter template for [React](https://facebook.github.io/react/) apps. Comes with a `gulpfile.js` preconfigured to handle:
 
-* JSX transformations and module bundling with [Browserify](http://browserify.org/)
+* ES6 transpiling and JSX transformations using [Babel](https://babeljs.io/)
+* Module bundling with [Browserify](http://browserify.org/)
 * [Sass](http://sass-lang.com/) compilation
 * LiveReload
 * Release build that has been minified with [UglifyJS](http://lisperator.net/uglifyjs/)
@@ -33,16 +34,16 @@ __Styles__
 - [gulp-csso](https://www.npmjs.org/package/gulp-csso)
 
 __JSX tranform/ES6 support__
-- [Babel (formerly 6to5)](https://github.com/babel/babel)
+- [babelify](https://www.npmjs.com/package/babelify)
 
 __Minification__
 - [gulp-uglify](https://github.com/terinjokes/gulp-uglify/)
 
 __Modules__
-- [gulp-browserify](https://www.npmjs.com/package/browserify)
+- [browserify](https://www.npmjs.com/package/browserify)
+- [watchify](https://www.npmjs.com/package/watchify)
 
 __LiveReload__
-- [watchify](https://www.npmjs.com/package/watchify)
 - [gulp-livereload](https://www.npmjs.com/package/gulp-livereload)
 
 ## Credits
