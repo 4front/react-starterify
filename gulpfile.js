@@ -15,6 +15,14 @@ var livereload = require('gulp-livereload');
 
 var buildType, liveReloading;
 
+var browserifyArgs = {
+  entries: './src/components/App.jsx',
+  // the babelify transform will automatically transform .jsx files
+  transform: [babelify],
+  debug: true, // generates inline sourcemaps
+  cache: {}, packageCache: {}, fullPaths: false
+};
+
 gulp.task('sass', function() {
   // Build the main
   gulp.src('src/scss/main.scss')
@@ -34,15 +42,18 @@ gulp.task('setDebugBuild', function() {
   buildType = 'debug';
 });
 
-gulp.task('debugBuild', ['setDebugBuild', 'html', 'sass']);
+gulp.task('debugBuild', ['setDebugBuild', 'html', 'sass', 'browserify']);
+
+gulp.task('browserify', function() {
+  browserify(browserifyArgs)
+    .bundle()
+    .pipe(source('app.js'))
+    .pipe(gulp.dest('build/debug'));
+});
 
 gulp.task('watch', ['debugBuild', 'setWatchers']);
 
 gulp.task('setWatchers', function(cb) {
-  // Copy the index.html file to
-  // gulp.src('src/*.html')
-  //   .pipe(gulp.dest('build/debug'));
-
   // Watch the html file for changes
   // and run livereload
   watch('src/*.html')
@@ -53,18 +64,10 @@ gulp.task('setWatchers', function(cb) {
   // our main.css
   gulp.watch('src/scss/*.scss', ['sass']);
 
-  var watcher  = watchify(browserify({
-    entries: './src/components/App.jsx',
-    // the babelify transform will automatically transform .jsx files
-    transform: [babelify],
-    debug: true, // generates inline sourcemaps
-    cache: {}, packageCache: {}, fullPaths: true
-  }));
+  var watcher = watchify(browserify(browserifyArgs));
 
   var onUpdate = function() {
     watcher
-      // The babelify transform will automatically transform .jsx files
-      // .transform(babelify)
       .bundle()
       .pipe(source('app.js'))
       .pipe(gulp.dest('build/debug'))
@@ -73,8 +76,9 @@ gulp.task('setWatchers', function(cb) {
       console.log('browserify bundle updated');
   };
 
-  // The watcher creates the bundle when the watch task is first called and again whenever
-  // a change is made.
+  // Recreate the browserify bundle whenever watchify detects changes.
+  // watchify is smart enough to do incremental updates based on only
+  // what has changed to speed things up.
   watcher
     .on('update', onUpdate)
     .bundle()

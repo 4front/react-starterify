@@ -5,7 +5,7 @@ let Parent = React.createClass({
    return (
      <div>
        <div> This is the parent.</div>
-       <Child name="child" num1="4" num2="80"/>
+       <Child name="child" num1="4" num2="20"/>
      </div>
    )
  }
