@@ -42,7 +42,7 @@ gulp.task('setDebugBuild', function() {
   buildType = 'debug';
 });
 
-gulp.task('debugBuild', ['setDebugBuild', 'html', 'sass', 'browserify']);
+gulp.task('build:debug', ['setDebugBuild', 'html', 'sass', 'browserify']);
 
 gulp.task('browserify', function() {
   browserify(browserifyArgs)
@@ -51,9 +51,7 @@ gulp.task('browserify', function() {
     .pipe(gulp.dest('build/debug'));
 });
 
-gulp.task('watch', ['debugBuild', 'setWatchers']);
-
-gulp.task('setWatchers', function(cb) {
+gulp.task('watch', function(cb) {
   // Watch the html file for changes
   // and run livereload
   watch('src/*.html')

@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "watch": "gulp watch",
-    "build": "gulp build"
+    "build:debug": "gulp build:debug",
+    "build:release": "gulp build:release"
   },
   "repository": {
     "type": "git",
@@ -59,7 +60,8 @@
     "livereload": true,
     "router": [
       {
-        "module": "webpage"
+        "module": "webpage",
+        "path": "/*"
       }
     ]
   }
