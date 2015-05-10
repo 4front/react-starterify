@@ -58,6 +58,9 @@
     },
     "livereload": true,
     "router": [
+      {
+        "module": "webpage"
+      }
     ]
   }
 }
