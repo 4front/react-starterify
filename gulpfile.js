@@ -1,19 +1,25 @@
 var gulp = require('gulp');
 var uglify = require('gulp-uglify');
 var watch = require('gulp-watch');
+var argv = require('yargs').argv;
 // var htmlreplace = require('gulp-html-replace');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var changed = require('gulp-changed');
 var babelify = require('babelify');
 var browserify = require('browserify');
+var uglifyify = require('uglifyify');
 var watchify = require('watchify');
 var sass = require('gulp-sass');
 var streamify = require('gulp-streamify');
 var gulpif = require('gulp-if');
+var rename = require('gulp-rename');
 var livereload = require('gulp-livereload');
 
-var buildType, liveReloading;
+var liveReloading;
+var buildType = argv.release ? 'release' : 'debug';
+
+console.log("buildType=" + buildType);
 
 var browserifyArgs = {
   entries: './src/components/App.jsx',
@@ -23,34 +29,35 @@ var browserifyArgs = {
   cache: {}, packageCache: {}, fullPaths: false
 };
 
+// Uglify the browserify bundle for release builds
+if (buildType === 'release')
+  browserifyArgs.transform.push('uglifyify');
+
 gulp.task('sass', function() {
   // Build the main
   gulp.src('src/scss/main.scss')
     .pipe(sourcemaps.init())
     .pipe(sass())
     .pipe(sourcemaps.write())
-    .pipe(gulp.dest('build/debug'))
+    .pipe(gulp.dest('build/' + buildType))
     .pipe(gulpif(liveReloading==true, livereload()));
 });
 
 gulp.task('html', function() {
   gulp.src('src/*.html')
-    .pipe(gulp.dest('build/debug'));
+    .pipe(gulp.dest('build/' + buildType));
 });
 
-gulp.task('setDebugBuild', function() {
-  buildType = 'debug';
-});
-
-gulp.task('build:debug', ['setDebugBuild', 'html', 'sass', 'browserify']);
+gulp.task('build', ['html', 'sass', 'browserify']);
 
 gulp.task('browserify', function() {
   browserify(browserifyArgs)
     .bundle()
-    .pipe(source('app.js'))
-    .pipe(gulp.dest('build/debug'));
+    .pipe(source(buildType === 'release' ? 'app.min.js' : 'app.js'))
+    .pipe(gulp.dest('build/' + buildType));
 });
 
+// The watch task is only intended to run for debug
 gulp.task('watch', function(cb) {
   // Watch the html file for changes
   // and run livereload
