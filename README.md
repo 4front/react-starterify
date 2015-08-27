@@ -7,7 +7,7 @@ A 4front starter template for [React](https://facebook.github.io/react/) apps. C
 * ES6 transpiling and JSX transformations using [Babel](https://babeljs.io/)
 * Module bundling with [Browserify](http://browserify.org/)
 * [Sass](http://sass-lang.com/) compilation
-* LiveReload
+* [Auto-Reload](http://4front.io/docs/guides/autoreload.html)
 * Release build that has been minified with [UglifyJS](http://lisperator.net/uglifyjs/)
 
 ## Usage
@@ -23,28 +23,6 @@ Start the development sandbox server. This will automatically kick of the `gulp 
 ~~~sh
 4front dev
 ~~~
-
-## Tools used
-
-__Build__
-- [gulp](http://gulpjs.com/)
-
-__Styles__
-- [gulp-sass](https://www.npmjs.org/package/gulp-sass)
-- [gulp-csso](https://www.npmjs.org/package/gulp-csso)
-
-__JSX tranform/ES6 support__
-- [babelify](https://www.npmjs.com/package/babelify)
-
-__Minification__
-- [gulp-uglify](https://github.com/terinjokes/gulp-uglify/)
-
-__Modules__
-- [browserify](https://www.npmjs.com/package/browserify)
-- [watchify](https://www.npmjs.com/package/watchify)
-
-__LiveReload__
-- [gulp-livereload](https://www.npmjs.com/package/gulp-livereload)
 
 ## Credits
 This article by [Tyler McGinnis](http://tylermcginnis.com/blog/) was very helpful in initially getting React + Gulp + Browserify all wired up properly:

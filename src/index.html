@@ -6,9 +6,15 @@
     <link rel="stylesheet" href="main.css">
   </head>
   <body>
-    <h1>TITLE aaa</h1>
+    <h1>TITLE</h1>
     <div id="content"></div>
-    <script src="/node_modules/react/dist/react.min.js"></script>
-    <script src="app.js"></script>
+    <div data-build="release">
+      <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.min.js"></script>
+      <script src="bundle.min.js"></script>
+    </div>
+    <div data-build="debug">
+      <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.js"></script>
+      <script src="bundle.js"></script>
+    </div>
   </body>
 </html>
