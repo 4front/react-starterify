@@ -5,7 +5,6 @@ var argv = require('yargs').argv;
 var request = require('request');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
-var changed = require('gulp-changed');
 var babelify = require('babelify');
 var browserify = require('browserify');
 var uglifyify = require('uglifyify');

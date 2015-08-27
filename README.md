@@ -2,7 +2,7 @@
 
 ![http://www.4front.io](https://s3-us-west-2.amazonaws.com/4front-media/4front-logo.png)
 
-A 4front starter template for [React](https://facebook.github.io/react/) apps. Comes with a `gulpfile.js` preconfigured to handle:
+A [4front](http://4front.io) starter template for [React](https://facebook.github.io/react/) apps. Comes with a `gulpfile.js` preconfigured to handle:
 
 * ES6 transpiling and JSX transformations using [Babel](https://babeljs.io/)
 * Module bundling with [Browserify](http://browserify.org/)
