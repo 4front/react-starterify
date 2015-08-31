@@ -4,6 +4,8 @@ var watch = require('gulp-watch');
 var argv = require('yargs').argv;
 var request = require('request');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var rename = require('gulp-rename');
 var sourcemaps = require('gulp-sourcemaps');
 var babelify = require('babelify');
 var browserify = require('browserify');
@@ -12,25 +14,12 @@ var watchify = require('watchify');
 var sass = require('gulp-sass');
 var streamify = require('gulp-streamify');
 var gulpif = require('gulp-if');
-var gutil = require('gutil');
+var gutil = require('gulp-util');
 
 var buildType = argv.release ? 'release' : 'debug';
 
 gutil.log("buildType=" + buildType);
-
-var browserifyArgs = {
-  entries: './src/components/App.jsx',
-  // the babelify transform will automatically transform .jsx files
-  transform: [babelify],
-  debug: true, // generates inline sourcemaps
-  cache: {},
-  packageCache: {},
-  fullPaths: false
-};
-
-// Uglify the browserify bundle for release builds
-if (buildType === 'release')
-  browserifyArgs.transform.push('uglifyify');
+var entryPoint = './src/components/App.jsx';
 
 gulp.task('sass', function() {
   // Build the main
@@ -49,10 +38,10 @@ gulp.task('html', function() {
 gulp.task('build', ['html', 'sass', 'browserify']);
 
 gulp.task('browserify', function() {
-  browserify(browserifyArgs)
-    .bundle()
-    .pipe(source(buildType === 'release' ? 'bundle.min.js' : 'bundle.js'))
-    .pipe(gulp.dest('build/' + buildType));
+  var bundler = browserify(entryPoint, {})
+    .transform(babelify, {/* options */ });
+
+  return buildBundle(bundler);
 });
 
 // The watch task is only intended to run for debug
@@ -76,23 +65,31 @@ gulp.task('watch', function(cb) {
   gulp.watch('src/scss/*.scss', ['sass']);
   gulp.watch('src/*.html', ['html']);
 
-  var watcher = watchify(browserify(browserifyArgs));
+  // Setup watchify/browserify
+  watchify.args.debug = true;
+  var bundler = watchify(browserify(entryPoint, watchify.args))
+    .transform(babelify, { /* opts */ });
 
-  var onUpdate = function() {
+  buildBundle(bundler, this);
+
+  bundler.on('update', function () {
     gutil.log('browserify bundle updated');
-
-    watcher
-      .bundle()
-      .pipe(source('bundle.js'))
-      .pipe(gulp.dest('build/debug'));
-  };
-
-  // Recreate the browserify bundle whenever watchify detects changes.
-  // watchify is smart enough to do incremental updates based on only
-  // what has changed to speed things up.
-  watcher
-    .on('update', onUpdate)
-    .bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('build/debug'));
+    buildBundle(bundler);
+  });
 });
+
+function buildBundle(bundler) {
+  return bundler.bundle()
+    .on('error', handleError)
+    .pipe(source(entryPoint))
+    .pipe(buffer())
+    .pipe(rename(buildType === 'debug' ? 'bundle.js' : 'bundle.min.js'))
+    .pipe(gulpif(buildType === 'debug', sourcemaps.init({ loadMaps: true })))
+    .pipe(gulpif(buildType === 'release', uglify()))
+    .pipe(gulpif(buildType === 'debug', sourcemaps.write('.')))
+    .pipe(gulp.dest('build/' + buildType));
+}
+
+function handleError(err) {
+  gutil.log("[ERROR] ", err.name, ": ", err.message.replace(new RegExp(__dirname, 'gi'), ''));
+}

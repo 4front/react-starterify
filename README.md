@@ -25,8 +25,7 @@ Start the development sandbox server. This will automatically kick of the `gulp 
 ~~~
 
 ## Credits
-This article by [Tyler McGinnis](http://tylermcginnis.com/blog/) was very helpful in initially getting React + Gulp + Browserify all wired up properly:
-[React.js Tutorial Pt 1: A Comprehensive Guide to Building Apps with React.js](http://tylermcginnis.com/reactjs-tutorial-a-comprehensive-guide-to-building-apps-with-react/)
+This [gist](https://gist.github.com/Fishrock123/8ea81dad3197c2f84366) was very helpful when figuring out how to configure watchify, browserify, and babelify in the gulpfile. Still more complicated than I would like, but it works.
 
 ## License
 Licensed under the Apache License, Version 2.0. See (http://www.apache.org/licenses/LICENSE-2.0).
