@@ -6,7 +6,6 @@ var request = require('request');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var rename = require('gulp-rename');
-var sourcemaps = require('gulp-sourcemaps');
 var babelify = require('babelify');
 var browserify = require('browserify');
 var uglifyify = require('uglifyify');
@@ -15,18 +14,25 @@ var sass = require('gulp-sass');
 var streamify = require('gulp-streamify');
 var gulpif = require('gulp-if');
 var gutil = require('gulp-util');
+var merge = require('merge');
 
 var buildType = argv.release ? 'release' : 'debug';
 
 gutil.log("buildType=" + buildType);
 var entryPoint = './src/components/App.jsx';
 
+var browserifyArgs = {
+  entries: entryPoint,
+  extensions: ['.jsx'],
+  bundleExternal: true,
+  detectGlobals: false,
+  debug: buildType === 'debug' // generates inline sourcemaps
+};
+
 gulp.task('sass', function() {
   // Build the main
   gulp.src('src/scss/main.scss')
-    .pipe(sourcemaps.init())
     .pipe(sass())
-    .pipe(sourcemaps.write())
     .pipe(gulp.dest('build/' + buildType));
 });
 
@@ -38,7 +44,7 @@ gulp.task('html', function() {
 gulp.task('build', ['html', 'sass', 'browserify']);
 
 gulp.task('browserify', function() {
-  var bundler = browserify(entryPoint, {})
+  var bundler = browserify(browserifyArgs)
     .transform(babelify, {/* options */ });
 
   return buildBundle(bundler);
@@ -66,8 +72,7 @@ gulp.task('watch', function(cb) {
   gulp.watch('src/*.html', ['html']);
 
   // Setup watchify/browserify
-  watchify.args.debug = true;
-  var bundler = watchify(browserify(entryPoint, watchify.args))
+  var bundler = watchify(browserify(merge(browserifyArgs, watchify.args)))
     .transform(babelify, { /* opts */ });
 
   buildBundle(bundler, this);
@@ -84,9 +89,7 @@ function buildBundle(bundler) {
     .pipe(source(entryPoint))
     .pipe(buffer())
     .pipe(rename(buildType === 'debug' ? 'bundle.js' : 'bundle.min.js'))
-    .pipe(gulpif(buildType === 'debug', sourcemaps.init({ loadMaps: true })))
     .pipe(gulpif(buildType === 'release', uglify()))
-    .pipe(gulpif(buildType === 'debug', sourcemaps.write('.')))
     .pipe(gulp.dest('build/' + buildType));
 }
 
