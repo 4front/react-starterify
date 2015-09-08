@@ -28,7 +28,9 @@
     "url": "https://github.com/4front/react-starterify/issues"
   },
   "homepage": "https://github.com/4front/react-starterify",
-  "dependencies": {},
+  "dependencies": {
+    "react": "^0.13.3"
+  },
   "devDependencies": {
     "babelify": "^5.0.4",
     "browserify": "^9.0.3",

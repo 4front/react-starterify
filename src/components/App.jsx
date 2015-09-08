@@ -1,3 +1,4 @@
-import Parent from './Parent.jsx';
+import React from 'react';
+import Parent from './Parent';
 
-React.render(<Parent />, document.getElementById('content'));
+React.render(<Parent />, document.body);
