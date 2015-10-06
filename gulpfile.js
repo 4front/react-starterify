@@ -1,33 +1,44 @@
-var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var watch = require('gulp-watch');
-var argv = require('yargs').argv;
-var request = require('request');
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
-var rename = require('gulp-rename');
-var babelify = require('babelify');
-var browserify = require('browserify');
-var uglifyify = require('uglifyify');
-var watchify = require('watchify');
-var sass = require('gulp-sass');
-var streamify = require('gulp-streamify');
-var gulpif = require('gulp-if');
-var gutil = require('gulp-util');
-var merge = require('merge');
+/* eslint-env node, amd */
 
-var buildType = argv.release ? 'release' : 'debug';
+const gulp = require('gulp');
+const rimraf = require('rimraf');
+const uglify = require('gulp-uglify');
+const watch = require('gulp-watch');
+const argv = require('yargs').argv;
+const request = require('request');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const rename = require('gulp-rename');
+const babelify = require('babelify');
+const browserify = require('browserify');
+const watchify = require('watchify');
+const sass = require('gulp-sass');
+const gulpif = require('gulp-if');
+const gutil = require('gulp-util');
+const merge = require('merge');
+const runSequence = require('run-sequence');
 
-gutil.log("buildType=" + buildType);
-var entryPoint = './src/components/App.jsx';
+const buildType = argv.release ? 'release' : 'debug';
 
-var browserifyArgs = {
+gutil.log('buildType=' + buildType);
+const entryPoint = './src/components/App.jsx';
+
+const browserifyArgs = {
   entries: entryPoint,
   extensions: ['.jsx'],
   bundleExternal: true,
   detectGlobals: false,
   debug: buildType === 'debug' // generates inline sourcemaps
 };
+
+gulp.task('clean', function(callback) {
+  rimraf('./build/' + buildType, callback);
+});
+
+gulp.task('copy', function() {
+  gulp.src('./src/img/*').pipe(gulp.dest('build/' + buildType + '/img'));
+  gulp.src('./src/*.html').pipe(gulp.dest('build/' + buildType));
+});
 
 gulp.task('sass', function() {
   // Build the main
@@ -36,63 +47,70 @@ gulp.task('sass', function() {
     .pipe(gulp.dest('build/' + buildType));
 });
 
-gulp.task('html', function() {
-  gulp.src('src/*.html')
-    .pipe(gulp.dest('build/' + buildType));
+gulp.task('build', function(callback) {
+  runSequence('clean', ['sass', 'copy', 'browserify'], callback);
 });
 
-gulp.task('build', ['html', 'sass', 'browserify']);
-
 gulp.task('browserify', function() {
-  var bundler = browserify(browserifyArgs)
+  const bundler = browserify(browserifyArgs)
     .transform(babelify, {/* options */ });
 
   return buildBundle(bundler);
 });
 
 // The watch task is only intended to run for debug
-gulp.task('watch', function(cb) {
-  // Watch for changes to the build/debug directory and
-  // trigger an autoreload
-  watch(["build/debug/*"], function(event) {
-    gutil.log('autoreload', event.path);
-    request({
-      url: 'https://localhost:3000/autoreload/notify',
-      method: 'post',
-      json: {
-        files: [event.path]
-      },
-      strictSSL: false
-    });
-  });
-
+gulp.task('watch', function() {
   // Watch *.scss files for changes and rebuild
   // our main.css
   gulp.watch('src/scss/*.scss', ['sass']);
-  gulp.watch('src/*.html', ['html']);
+  gulp.watch('src/*.html', ['copy']);
 
   // Setup watchify/browserify
-  var bundler = watchify(browserify(merge(browserifyArgs, watchify.args)))
+  const bundler = watchify(browserify(merge(browserifyArgs, watchify.args)))
     .transform(babelify, { /* opts */ });
 
-  buildBundle(bundler, this);
+  buildBundle(bundler, function(err) {
+    if (err) return handleError(err);
 
-  bundler.on('update', function () {
-    gutil.log('browserify bundle updated');
-    buildBundle(bundler);
+    // Watch for changes to the build/debug directory and
+    // trigger an autoreload
+    watch(['build/debug/*'], function(event) {
+      gutil.log('autoreload', event.path);
+      request({
+        url: 'http://localhost:3000/autoreload/notify',
+        method: 'post',
+        json: {
+          files: [event.path]
+        },
+        strictSSL: false
+      });
+    });
+  });
+
+  bundler.on('update', function() {
+    buildBundle(bundler, function(err) {
+      if (err) return handleError(err);
+
+      gutil.log('browserify bundle updated');
+    });
   });
 });
 
-function buildBundle(bundler) {
+function buildBundle(bundler, callback) {
   return bundler.bundle()
-    .on('error', handleError)
+    .on('error', callback || handleError)
     .pipe(source(entryPoint))
     .pipe(buffer())
     .pipe(rename(buildType === 'debug' ? 'bundle.js' : 'bundle.min.js'))
     .pipe(gulpif(buildType === 'release', uglify()))
-    .pipe(gulp.dest('build/' + buildType));
+    .pipe(gulp.dest('build/' + buildType))
+    .on('end', function() {
+      if (callback) {
+        callback();
+      }
+    });
 }
 
 function handleError(err) {
-  gutil.log("[ERROR] ", err.name, ": ", err.message.replace(new RegExp(__dirname, 'gi'), ''));
+  gutil.log('[ERROR] ', err.name, ': ', err.message.replace(new RegExp(__dirname, 'gi'), ''));
 }
